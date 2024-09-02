@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: This template creates a record in Route 53.
+
+Metadata:
+  AWS::CloudFormation::Interface: 
+    ParameterGroups:
+      - 
+        Label: 
+          default: Export ALB Stack Name
+        Parameters:
+          - ExportAlbStackName
+      - 
+        Label: 
+          default: Domain Name
+        Parameters:
+          - DomainName
+
+Parameters:
+  ExportAlbStackName:
+    Description: The name of the alb stack that exports values
+    Type: String
+
+  DomainName:
+    Description: The main domain name of the WordPress site (e.g. example.com)
+    Type: String
+    Default: shonproject101.com
+
+Resources:
+  SiteDomainName:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Join ['', [!Ref DomainName, '.']]
+      RecordSets:
+      - Name: !Join
+        - ''
+        - - 'www.'
+          - !Ref DomainName        
+        Type: A
+        AliasTarget:
+          HostedZoneId:
+            Fn::ImportValue: !Sub ${ExportAlbStackName}-ApplicationLoadBalancerZoneID
+          DNSName:
+            Fn::ImportValue: !Sub ${ExportAlbStackName}-ApplicationLoadBalancerDnsName
+
+Outputs:
+  WebsiteURL:
+    Value: !Join 
+      - ''
+      - - 'https://www.'
+        - 'shonproject101.com'
